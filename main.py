@@ -1,5 +1,7 @@
 from Includes import flights_finder as ff
 from Includes import screens
+from Includes import popups as pop
+import re
 import dearpygui.dearpygui as dpg
 
 screen_width = screens.get_sizes("width")
@@ -11,12 +13,32 @@ dpg.create_viewport(title='FlightsAround', width=screen_width, height=screen_hei
 dpg.toggle_viewport_fullscreen()
 
 
+def clear_table():
+    children = dpg.get_item_children("main_tab", 1)
+    for item in children:
+        dpg.delete_item(item=item)
+
+
+def fill_table(fl_dict):
+    with dpg.table_row(parent="main_tab"):
+        for item in fl_dict.values():
+            dpg.add_text(item)
+
+
 def on_enter(sender, app_data):
     if dpg.is_key_pressed(dpg.mvKey_Return):
-        if dpg.get_value("__area") and dpg.get_value("__rad") and dpg.get_value("__pref"):
-            print("all fields are full") # start linking magic shit back up (4 time, huh?)
+        if dpg.get_value("__area") and dpg.get_value("__rad"):
+            if re.match(r'^[0-9]*\.?[0-9]*$', str(dpg.get_value("__rad"))):
+                scanner = ff.Picker()
+                scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
+                print(scanner.flight_detailed)  # start linking magic shit back up (4th time, huh?)
+                clear_table()
+                for meta in scanner.flight_detailed:
+                    fill_table(meta)
+            else:
+                pop.invalid_radius()
         else:
-            print("smth went wrong")
+            pop.mandatory_empty()
 
 
 with dpg.window(label="Main", id='main_window', width=screen_width - 200, height=screen_height - 200,
@@ -26,7 +48,7 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
         dpg.add_input_text(hint="Radius (Mandatory)", width=screen_width / 3, height=-1, tag="__rad")
         dpg.add_input_text(hint="Preferences (Optional)", width=screen_width / 3, height=-1, tag="__pref")
 
-    with dpg.table(header_row=True, tag='tag', scrollY=True, scrollX=False) as tbl:
+    with dpg.table(header_row=True, tag='main_tab', scrollY=True, scrollX=False) as tbl:
         dpg.add_table_column(label="Call-sign")
         dpg.add_table_column(label="Airline")
         dpg.add_table_column(label="ICAO")
@@ -53,8 +75,8 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-# get stuff working
-# make popups
+# make invalid location popup
 # make coloring and finding the Preferences
+# find how to make interface bigger (set up a font maybe??)
 # make viewport look cool maybe
 # make exe file
