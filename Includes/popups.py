@@ -9,3 +9,8 @@ def mandatory_empty():
 def invalid_radius():
     with dpg.window(popup=True, no_resize=True, no_title_bar=True, no_move=True):
         dpg.add_text("Radius format is invalid.\n Fileld can be filled only with numbers and one dot.")
+
+
+def loc_not_found():
+    with dpg.window(popup=True, no_resize=True, no_move=True, no_title_bar=True):
+        dpg.add_text("Unable to found prowided location.\n Consider checking spelling.")

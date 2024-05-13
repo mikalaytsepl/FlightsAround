@@ -20,21 +20,34 @@ def clear_table():
 
 
 def fill_table(fl_dict):
+    pref = dpg.get_value("__pref")
     with dpg.table_row(parent="main_tab"):
         for item in fl_dict.values():
-            dpg.add_text(item)
+            if pref:
+                if type(pref) != list:
+                    pref = pref.split("|")
+                for preference in pref:
+                    if preference in item:
+                        dpg.add_text(item, color=(33, 222, 152))
+                    else:
+                        dpg.add_text(item)
+            else:
+                dpg.add_text(item)
 
 
 def on_enter(sender, app_data):
     if dpg.is_key_pressed(dpg.mvKey_Return):
         if dpg.get_value("__area") and dpg.get_value("__rad"):
             if re.match(r'^[0-9]*\.?[0-9]*$', str(dpg.get_value("__rad"))):
-                scanner = ff.Picker()
-                scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
-                print(scanner.flight_detailed)  # start linking magic shit back up (4th time, huh?)
-                clear_table()
-                for meta in scanner.flight_detailed:
-                    fill_table(meta)
+                try:
+                    scanner = ff.Picker()
+                    scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
+                    print(scanner.flight_detailed)  # start linking magic shit back up (4th time, huh?)
+                    clear_table()
+                    for meta in scanner.flight_detailed:
+                        fill_table(meta)
+                except AttributeError:
+                    pop.loc_not_found()
             else:
                 pop.invalid_radius()
         else:
@@ -75,8 +88,7 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-# make invalid location popup
-# make coloring and finding the Preferences
+
+# make coloring and finding the Preferences (Fix the bug with adding multiple filters)
 # find how to make interface bigger (set up a font maybe??)
-# make viewport look cool maybe
 # make exe file
