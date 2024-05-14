@@ -19,19 +19,35 @@ def clear_table():
         dpg.delete_item(item=item)
 
 
+def pref_checker(values):
+    pref = dpg.get_value("__pref")
+    if type(pref) != list:
+        pref = pref.split("|")
+        for preference in pref:
+            if preference in values:
+                continue
+            else:
+                return False
+        return True
+    else:
+        if pref in values:
+            return True
+        else:
+            return False
+
+
 def fill_table(fl_dict):
     pref = dpg.get_value("__pref")
     with dpg.table_row(parent="main_tab"):
-        for item in fl_dict.values():
-            if pref:
-                if type(pref) != list:
-                    pref = pref.split("|")
-                for preference in pref:
-                    if preference in item:
-                        dpg.add_text(item, color=(33, 222, 152))
-                    else:
-                        dpg.add_text(item)
+        if pref:
+            if pref_checker(fl_dict.values()):
+                for item in fl_dict.values():
+                    dpg.add_text(item, color=(23, 232, 199))
             else:
+                for item in fl_dict.values():
+                    dpg.add_text(item)
+        else:
+            for item in fl_dict.values():
                 dpg.add_text(item)
 
 
@@ -76,12 +92,6 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
     with dpg.handler_registry():
         dpg.add_key_press_handler(dpg.mvKey_Return, callback=on_enter)
 
-    with dpg.child_window(width=600, height=30, border=False,
-                          pos=(10, dpg.get_viewport_height() - 10)) as botLabs:
-        with dpg.group(horizontal=True, horizontal_spacing=20):
-            stat = dpg.add_text("scan status: NoScan")
-    dpg.set_viewport_resize_callback(lambda: dpg.set_item_pos(botLabs, (10, dpg.get_viewport_height() - 60)))
-
 dpg.set_primary_window("main_window", True)
 dpg.setup_dearpygui()
 dpg.show_viewport()
@@ -89,6 +99,5 @@ dpg.start_dearpygui()
 dpg.destroy_context()
 
 
-# make coloring and finding the Preferences (Fix the bug with adding multiple filters)
 # find how to make interface bigger (set up a font maybe??)
 # make exe file
