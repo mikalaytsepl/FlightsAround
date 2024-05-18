@@ -1,78 +1,9 @@
 from FlightRadar24.api import FlightRadar24API
 from geopy.geocoders import Nominatim
-import datetime
+from Includes import noinfo_cather as cat
 
 
-class Parser:
-
-    def _get_flight_callsign(self, details):
-        try:
-            return (details.get("identification"))['callsign']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _timstemp_to_human(self, stemp):
-        raw_time = datetime.datetime.fromtimestamp(stemp)
-        return raw_time.strftime("%H:%M")
-
-    def _get_line_icao(self, details):
-        try:
-            return ((details.get("airline")).get('code'))['icao']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_line_name(self, details):
-        try:
-            return (details.get("airline")).get('name')
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_departure_name(self, details):
-        try:
-            return ((details.get("airport")).get("origin"))['name']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_departure_icao(self, details):
-        try:
-            return ((details.get("airport")).get("origin")['code'])['icao']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_arrival_name(self, details):
-        try:
-            return (details.get("airport")).get("destination")['name']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_arrival_icao(self, details):
-        try:
-            return ((details.get("airport")).get("destination")['code'])['icao']
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_model(self, details):
-        try:
-            return f'{details.get("aircraft").get("model").get("code")} {details.get("aircraft").get("model").get("text")}'
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_time_departure(self, details):
-        try:
-            return self._timstemp_to_human(
-                (details.get("time")).get("scheduled")['departure'])
-        except (TypeError, AttributeError):
-            return "No info"
-
-    def _get_time_arrival(self, details):
-        try:
-            return self._timstemp_to_human(
-                (details.get("time")).get("scheduled")['arrival'])
-        except (TypeError, AttributeError):
-            return "No info"
-
-
-class Picker(Parser):
+class Picker:
     country_boundaries = {}
     fr24 = FlightRadar24API()
     geoflag = False
@@ -99,15 +30,15 @@ class Picker(Parser):
             for flight in flights:
                 current_flight = self.fr24.get_flight_details(flight)
                 self.flight_detailed.append(
-                    {"callsing": self._get_flight_callsign(current_flight),
-                     "line": self._get_line_name(current_flight),
-                     "icao": self._get_line_icao(current_flight),
-                     "model": self._get_model(current_flight),
-                     "departure_name": self._get_departure_name(current_flight),
-                     "departure_icao": self._get_departure_icao(current_flight),
-                     'time_departure': self._get_time_departure(current_flight),
-                     "arrival_name": self._get_arrival_name(current_flight),
-                     "arrival_icao": self._get_arrival_icao(current_flight),
-                     'time_arrival': self._get_time_arrival(current_flight)
+                    {"callsing": cat.get_flight_callsign(current_flight),
+                     "line": cat.get_line_name(current_flight),
+                     "icao": cat.get_line_icao(current_flight),
+                     "model": cat.get_model(current_flight),
+                     "departure_name": cat.get_departure_name(current_flight),
+                     "departure_icao": cat.get_departure_icao(current_flight),
+                     'time_departure': cat.get_time_departure(current_flight),
+                     "arrival_name": cat.get_arrival_name(current_flight),
+                     "arrival_icao": cat.get_arrival_icao(current_flight),
+                     'time_arrival': cat.get_time_arrival(current_flight)
                      })
                 count += 1

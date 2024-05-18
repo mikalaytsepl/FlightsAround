@@ -3,6 +3,7 @@ from Includes import screens
 from Includes import popups as pop
 import re
 import dearpygui.dearpygui as dpg
+import uuid
 
 screen_width = screens.get_sizes("width")
 screen_height = screens.get_sizes("heigth")
@@ -19,36 +20,50 @@ def clear_table():
         dpg.delete_item(item=item)
 
 
-def pref_checker(values):
-    pref = dpg.get_value("__pref")
-    if type(pref) != list:
-        pref = pref.split("|")
-        for preference in pref:
-            if preference in values:
-                continue
-            else:
-                return False
-        return True
-    else:
-        if pref in values:
+class TableFiller:
+    fl_dict = {}
+
+    def __init__(self, fl_dict):
+        self.fl_dict = fl_dict
+
+    def _pref_checker(self, values):
+        pref = dpg.get_value("__pref")
+        if type(pref) != list:
+            pref = pref.split("|")
+            for preference in pref:
+                if preference in values:
+                    continue
+                else:
+                    return False
             return True
         else:
-            return False
-
-
-def fill_table(fl_dict):
-    pref = dpg.get_value("__pref")
-    with dpg.table_row(parent="main_tab"):
-        if pref:
-            if pref_checker(fl_dict.values()):
-                for item in fl_dict.values():
-                    dpg.add_text(item, color=(23, 232, 199))
+            if pref in values:
+                return True
             else:
-                for item in fl_dict.values():
-                    dpg.add_text(item)
-        else:
-            for item in fl_dict.values():
-                dpg.add_text(item)
+                return False
+
+    def fill_table(self):
+        pref = dpg.get_value("__pref")
+        with dpg.table_row(parent="main_tab"):
+            if pref:
+                if self._pref_checker(self.fl_dict.values()):
+                    for item in self.fl_dict.values():
+                        temptag = f"button_{uuid.uuid4()}"
+                        dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+                        dpg.bind_item_theme(item=temptag, theme=button_theme)
+                else:
+                    for item in self.fl_dict.values():
+                        temptag = f"button_{uuid.uuid4()}"
+                        dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+            else:
+                for item in self.fl_dict.values():
+                    temptag = f"button_{uuid.uuid4()}"
+                    dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+
+
+def on_table_button_clicked(sender, app_data):
+    button_text = dpg.get_item_label(item=sender)
+    dpg.set_clipboard_text(text=button_text)
 
 
 def on_enter(sender, app_data):
@@ -58,10 +73,11 @@ def on_enter(sender, app_data):
                 try:
                     scanner = ff.Picker()
                     scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
-                    print(scanner.flight_detailed)  # start linking magic shit back up (4th time, huh?)
+                    print(scanner.flight_detailed)
                     clear_table()
                     for meta in scanner.flight_detailed:
-                        fill_table(meta)
+                        tmp = TableFiller(meta)
+                        tmp.fill_table()
                 except AttributeError:
                     pop.loc_not_found()
             else:
@@ -89,6 +105,17 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
         dpg.add_table_column(label="Destination ICAO")
         dpg.add_table_column(label="Planned arrival")
 
+    with dpg.theme() as button_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # Set button background color
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (23, 162, 184), category=dpg.mvThemeCat_Core)
+            # Set button hovered color
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (40, 200, 220), category=dpg.mvThemeCat_Core)
+            # Set button active color
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (10, 130, 150), category=dpg.mvThemeCat_Core)
+            # Set button text color
+            dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 255, 255), category=dpg.mvThemeCat_Core)
+
     with dpg.handler_registry():
         dpg.add_key_press_handler(dpg.mvKey_Return, callback=on_enter)
 
@@ -98,6 +125,5 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-
-# find how to make interface bigger (set up a font maybe??)
-# make exe file
+# maybe make a confirmation popup ?
+# make a button at the top between the table and menue which will open browser with flightradar site
