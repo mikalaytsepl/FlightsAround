@@ -4,6 +4,7 @@ from Includes import popups as pop
 import re
 import dearpygui.dearpygui as dpg
 import uuid
+import webbrowser
 
 screen_width = screens.get_sizes("width")
 screen_height = screens.get_sizes("heigth")
@@ -18,6 +19,10 @@ def clear_table():
     children = dpg.get_item_children("main_tab", 1)
     for item in children:
         dpg.delete_item(item=item)
+
+
+def open_flihtradar():
+    webbrowser.open("https://www.flightradar24.com/50.57,16.99/7")
 
 
 class TableFiller:
@@ -93,6 +98,10 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
         dpg.add_input_text(hint="Radius (Mandatory)", width=screen_width / 3, height=-1, tag="__rad")
         dpg.add_input_text(hint="Preferences (Optional)", width=screen_width / 3, height=-1, tag="__pref")
 
+    with dpg.group(horizontal=True, id="flightbutton_group", width=screen_width):
+        dpg.add_button(label="Click Here to open Flight Radar webpage in your default brouser", tag="browsebutton",
+                       callback=open_flihtradar)
+
     with dpg.table(header_row=True, tag='main_tab', scrollY=True, scrollX=False) as tbl:
         dpg.add_table_column(label="Call-sign")
         dpg.add_table_column(label="Airline")
@@ -107,13 +116,9 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
 
     with dpg.theme() as button_theme:
         with dpg.theme_component(dpg.mvButton):
-            # Set button background color
             dpg.add_theme_color(dpg.mvThemeCol_Button, (23, 162, 184), category=dpg.mvThemeCat_Core)
-            # Set button hovered color
             dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (40, 200, 220), category=dpg.mvThemeCat_Core)
-            # Set button active color
             dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (10, 130, 150), category=dpg.mvThemeCat_Core)
-            # Set button text color
             dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 255, 255), category=dpg.mvThemeCat_Core)
 
     with dpg.handler_registry():
@@ -125,5 +130,4 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-# maybe make a confirmation popup ?
-# make a button at the top between the table and menue which will open browser with flightradar site
+
