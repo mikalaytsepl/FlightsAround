@@ -1,10 +1,8 @@
-from Includes import flights_finder as ff
-from Includes import screens
-from Includes import popups as pop
+from model.APImanager import flights_finder as ff
+from model.GUImanager import interactive as inter, screens
 import re
 import dearpygui.dearpygui as dpg
 import uuid
-import webbrowser
 
 screen_width = screens.get_sizes("width")
 screen_height = screens.get_sizes("heigth")
@@ -19,10 +17,6 @@ def clear_table():
     children = dpg.get_item_children("main_tab", 1)
     for item in children:
         dpg.delete_item(item=item)
-
-
-def open_flihtradar():
-    webbrowser.open("https://www.flightradar24.com/50.57,16.99/7")
 
 
 class TableFiller:
@@ -66,29 +60,29 @@ class TableFiller:
                     dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
 
 
-def on_table_button_clicked(sender, app_data):
+def on_table_button_clicked(sender):
     button_text = dpg.get_item_label(item=sender)
     dpg.set_clipboard_text(text=button_text)
 
 
-def on_enter(sender, app_data):
+def on_enter():
     if dpg.is_key_pressed(dpg.mvKey_Return):
         if dpg.get_value("__area") and dpg.get_value("__rad"):
             if re.match(r'^[0-9]*\.?[0-9]*$', str(dpg.get_value("__rad"))):
                 try:
                     scanner = ff.Picker()
                     scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
-                    print(scanner.flight_detailed)
+                    print(scanner.flight_detailed) # usunac na koniec
                     clear_table()
                     for meta in scanner.flight_detailed:
                         tmp = TableFiller(meta)
                         tmp.fill_table()
                 except AttributeError:
-                    pop.loc_not_found()
+                    inter.loc_not_found()
             else:
-                pop.invalid_radius()
+                inter.invalid_radius()
         else:
-            pop.mandatory_empty()
+            inter.mandatory_empty()
 
 
 with dpg.window(label="Main", id='main_window', width=screen_width - 200, height=screen_height - 200,
@@ -100,7 +94,7 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
 
     with dpg.group(horizontal=True, id="flightbutton_group", width=screen_width):
         dpg.add_button(label="Click Here to open Flight Radar webpage in your default brouser", tag="browsebutton",
-                       callback=open_flihtradar)
+                       callback=inter.open_flightradar)
 
     with dpg.table(header_row=True, tag='main_tab', scrollY=True, scrollX=False) as tbl:
         dpg.add_table_column(label="Call-sign")
@@ -130,4 +124,6 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-
+#  apply filters with the same dataset, but not initializing scan again
+#  make a loading icon  when scan
+# make scanner run asynchroniously

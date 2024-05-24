@@ -1,4 +1,5 @@
 import dearpygui.dearpygui as dpg
+import webbrowser
 
 
 def mandatory_empty():
@@ -14,3 +15,7 @@ def invalid_radius():
 def loc_not_found():
     with dpg.window(popup=True, no_resize=True, no_move=True, no_title_bar=True):
         dpg.add_text("Unable to found prowided location.\n Consider checking spelling.")
+
+
+def open_flightradar():
+    webbrowser.open("https://www.flightradar24.com/50.57,16.99/7")

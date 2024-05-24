@@ -1,34 +1,32 @@
 from FlightRadar24.api import FlightRadar24API
 from geopy.geocoders import Nominatim
-from Includes import noinfo_cather as cat
+from model.APImanager import noinfo_cather as cat
 
 
 class Picker:
-    country_boundaries = {}
-    fr24 = FlightRadar24API()
-    geoflag = False
-    allflightinfo = []
+    __fr24 = FlightRadar24API()
+    __geoflag = False
     flight_detailed = []
-    lat = 0.0
-    long = 0.0
+    __lat = 0.0
+    __long = 0.0
 
     def _get_my_pos(self, name):
         loc = Nominatim(user_agent="Get Loc")
         location_name = loc.geocode(name)
-        self.lat = float(location_name.latitude)
-        self.long = float(location_name.longitude)
+        self.__lat = float(location_name.latitude)
+        self.__long = float(location_name.longitude)
 
     def get_by_bounds(self, rad, name):
         self.flight_detailed = []
-        if not self.geoflag:
+        if not self.__geoflag:
             self._get_my_pos(name)
 
-        bounds = self.fr24.get_bounds_by_point(self.lat, self.long, float(rad * 1000))
-        flights = self.fr24.get_flights(bounds=bounds)
+        bounds = self.__fr24.get_bounds_by_point(self.__lat, self.__long, float(rad * 1000))
+        flights = self.__fr24.get_flights(bounds=bounds)
         if len(flights) != 0:
             count = 1
             for flight in flights:
-                current_flight = self.fr24.get_flight_details(flight)
+                current_flight = self.__fr24.get_flight_details(flight)
                 self.flight_detailed.append(
                     {"callsing": cat.get_flight_callsign(current_flight),
                      "line": cat.get_line_name(current_flight),

@@ -9,5 +9,3 @@ def get_sizes(which_one):
         return primary_monitor.height
     else:
         return None
-
-
