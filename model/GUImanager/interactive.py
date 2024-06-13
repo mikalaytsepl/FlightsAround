@@ -19,3 +19,11 @@ def loc_not_found():
 
 def open_flightradar():
     webbrowser.open("https://www.flightradar24.com/50.57,16.99/7")
+
+
+def table_empty():
+    with dpg.window(popup=True, no_resize=True, no_move=True, no_title_bar=True):
+        dpg.add_text(
+            "Tabel is empty, make a scan to then appy a filter \n or initialize a scan with a filter already \n"
+            " set by filling all the textfields and pressing enter button.")
+

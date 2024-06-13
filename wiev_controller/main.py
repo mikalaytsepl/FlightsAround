@@ -12,6 +12,8 @@ dpg.create_viewport(title='FlightsAround', width=screen_width, height=screen_hei
                     clear_color=[5, 5, 5])
 dpg.toggle_viewport_fullscreen()
 
+scan_results: bool
+
 
 def clear_table():
     children = dpg.get_item_children("main_tab", 1)
@@ -19,13 +21,17 @@ def clear_table():
         dpg.delete_item(item=item)
 
 
-class TableFiller:
-    fl_dict = {}
+class FilterManager:
+    def __init__(self):
+        self._children = dpg.get_item_children("main_tab", 1)
 
-    def __init__(self, fl_dict):
-        self.fl_dict = fl_dict
+    def _reset_defaults(self):
 
-    def _pref_checker(self, values):
+        for row in self._children:
+            dpg.bind_item_theme(theme=default_theme, item=row)
+
+    @staticmethod  # because it does not need to have access to a self instance but needs to be private
+    def _pref_checker(values):
         pref = dpg.get_value("__pref")
         if type(pref) != list:
             pref = pref.split("|")
@@ -41,21 +47,53 @@ class TableFiller:
             else:
                 return False
 
-    def fill_table(self):
-        pref = dpg.get_value("__pref")
-        with dpg.table_row(parent="main_tab"):
-            if pref:
-                if self._pref_checker(self.fl_dict.values()):
-                    for item in self.fl_dict.values():
-                        temptag = f"button_{uuid.uuid4()}"
-                        dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
-                        dpg.bind_item_theme(item=temptag, theme=button_theme)
-                else:
-                    for item in self.fl_dict.values():
-                        temptag = f"button_{uuid.uuid4()}"
-                        dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+    def __str__(self):
+        try:
+            self._reset_defaults()
+            if not scan_results:
+                inter.table_empty()
+            elif not dpg.get_value("__pref").strip():
+                self._reset_defaults()
             else:
-                for item in self.fl_dict.values():
+                self._reset_defaults()
+                for row in self._children:
+                    if self._pref_checker([dpg.get_item_configuration(child_of_the_row)["label"] for child_of_the_row in dpg.get_item_children(row, 1)]):
+                        dpg.bind_item_theme(item=row, theme=button_theme)
+        except NameError:
+            inter.table_empty()
+
+
+def assemble_filter() -> None:
+    tmp = FilterManager()
+    try:
+        print(tmp)
+    except TypeError:
+        pass
+
+
+class TableFillerNoPref:
+    def __init__(self, fl_dict: dict):
+        self._fl_dict = fl_dict
+
+    def fill_tabel(self):
+        with dpg.table_row(parent="main_tab"):
+            for item in self._fl_dict.values():
+                temptag = f"button_{uuid.uuid4()}"
+                dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+
+
+class TableFillerPref(TableFillerNoPref, FilterManager):
+
+    def fill_table(self):
+
+        with dpg.table_row(parent="main_tab"):
+            if self._pref_checker(self._fl_dict.values()):
+                for item in self._fl_dict.values():
+                    temptag = f"button_{uuid.uuid4()}"
+                    dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
+                    dpg.bind_item_theme(item=temptag, theme=button_theme)
+            else:
+                for item in self._fl_dict.values():
                     temptag = f"button_{uuid.uuid4()}"
                     dpg.add_button(label=item, tag=temptag, callback=on_table_button_clicked)
 
@@ -70,13 +108,22 @@ def on_enter():
         if dpg.get_value("__area") and dpg.get_value("__rad"):
             if re.match(r'^[0-9]*\.?[0-9]*$', str(dpg.get_value("__rad"))):
                 try:
+                    global scan_results
+
                     scanner = ff.Picker()
                     scanner.get_by_bounds(int(dpg.get_value("__rad")), dpg.get_value("__area"))
-                    print(scanner.flight_detailed) # usunac na koniec
+                    scan_results = True
+
                     clear_table()
-                    for meta in scanner.flight_detailed:
-                        tmp = TableFiller(meta)
-                        tmp.fill_table()
+                    pref = dpg.get_value("__pref")
+                    if pref:
+                        for meta in scanner.flight_detailed:
+                            filler = TableFillerPref(meta)
+                            filler.fill_table()
+                    else:
+                        for meta in scanner.flight_detailed:
+                            filler = TableFillerNoPref(meta)
+                            filler.fill_tabel()
                 except AttributeError:
                     inter.loc_not_found()
             else:
@@ -87,14 +134,19 @@ def on_enter():
 
 with dpg.window(label="Main", id='main_window', width=screen_width - 200, height=screen_height - 200,
                 min_size=(int(screen_width / 2), int(screen_height / 2))):
-    with dpg.group(horizontal=True, id="menu group", height=100):
+    with dpg.group(horizontal=True, id="menu group", height=20):
         dpg.add_input_text(hint="Area (Mandatory)", width=screen_width / 3, height=-1, tag="__area")
         dpg.add_input_text(hint="Radius (Mandatory)", width=screen_width / 3, height=-1, tag="__rad")
-        dpg.add_input_text(hint="Preferences (Optional)", width=screen_width / 3, height=-1, tag="__pref")
+        dpg.add_input_text(hint="Preferences (Optional)", width=screen_width / 4, height=-1, tag="__pref")
+        dpg.add_button(label="Apply", width=screen_width / 15, height=-1, tag="__filter",
+                       callback=assemble_filter)
 
     with dpg.group(horizontal=True, id="flightbutton_group", width=screen_width):
         dpg.add_button(label="Click Here to open Flight Radar webpage in your default brouser", tag="browsebutton",
                        callback=inter.open_flightradar)
+
+    with dpg.group(horizontal=True, id="scan_status_window", width=screen_width):
+        dpg.add_text(label="No scan initialized", tag="status_text")
 
     with dpg.table(header_row=True, tag='main_tab', scrollY=True, scrollX=False) as tbl:
         dpg.add_table_column(label="Call-sign")
@@ -107,6 +159,8 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
         dpg.add_table_column(label="Destination Name")
         dpg.add_table_column(label="Destination ICAO")
         dpg.add_table_column(label="Planned arrival")
+
+    default_theme = dpg.get_item_theme("browsebutton")
 
     with dpg.theme() as button_theme:
         with dpg.theme_component(dpg.mvButton):
@@ -124,6 +178,4 @@ dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
 
-#  apply filters with the same dataset, but not initializing scan again
 #  make a loading icon  when scan
-# make scanner run asynchroniously

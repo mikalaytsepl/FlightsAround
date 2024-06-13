@@ -10,6 +10,20 @@ class Picker:
     __lat = 0.0
     __long = 0.0
 
+    def __str__(self):
+        tmp = {}
+        count = [i for i in range(len(self.flight_detailed))]
+        i = 0
+        for details in self.flight_detailed:
+            tmp.update({count[i]: list(details.values())})
+            i += 1
+
+        res = '\n'.join(str(item) for item in tmp.items())
+        return res
+
+    def __len__(self):
+        return len(self.flight_detailed)
+
     def _get_my_pos(self, name):
         loc = Nominatim(user_agent="Get Loc")
         location_name = loc.geocode(name)
@@ -40,3 +54,4 @@ class Picker:
                      'time_arrival': cat.get_time_arrival(current_flight)
                      })
                 count += 1
+
