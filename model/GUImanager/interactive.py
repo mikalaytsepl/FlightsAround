@@ -26,4 +26,3 @@ def table_empty():
         dpg.add_text(
             "Tabel is empty, make a scan to then appy a filter \n or initialize a scan with a filter already \n"
             " set by filling all the textfields and pressing enter button.")
-

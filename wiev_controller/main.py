@@ -1,5 +1,6 @@
 from model.APImanager import flights_finder as ff
 from model.GUImanager import interactive as inter, screens
+from model.GUImanager import colortext
 import re
 import dearpygui.dearpygui as dpg
 import uuid
@@ -108,6 +109,10 @@ def on_enter():
         if dpg.get_value("__area") and dpg.get_value("__rad"):
             if re.match(r'^[0-9]*\.?[0-9]*$', str(dpg.get_value("__rad"))):
                 try:
+
+                    colortext.RedText("status_text")()
+                    dpg.set_value(item="status_text", value="Scan processing.")
+
                     global scan_results
 
                     scanner = ff.Picker()
@@ -126,6 +131,9 @@ def on_enter():
                             filler.fill_tabel()
                 except AttributeError:
                     inter.loc_not_found()
+                finally:
+                    colortext.GreenText("status_text")()
+                    dpg.set_value(item="status_text", value="Scan finished.")
             else:
                 inter.invalid_radius()
         else:
@@ -146,7 +154,7 @@ with dpg.window(label="Main", id='main_window', width=screen_width - 200, height
                        callback=inter.open_flightradar)
 
     with dpg.group(horizontal=True, id="scan_status_window", width=screen_width):
-        dpg.add_text(label="No scan initialized", tag="status_text")
+        scan_status = dpg.add_text("No scan initialized", tag="status_text")
 
     with dpg.table(header_row=True, tag='main_tab', scrollY=True, scrollX=False) as tbl:
         dpg.add_table_column(label="Call-sign")
@@ -177,5 +185,3 @@ dpg.setup_dearpygui()
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
-
-#  make a loading icon  when scan
