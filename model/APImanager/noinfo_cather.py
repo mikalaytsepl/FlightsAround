@@ -1,6 +1,9 @@
 import datetime
 
 
+# finds and returns the needed information from the dict, and if there is no such information, for example,
+# for security reasons, the error is cought by try except and replaced wiht No info
+
 def get_flight_callsign(details):
     try:
         return (details.get("identification"))['callsign']
@@ -8,6 +11,8 @@ def get_flight_callsign(details):
         return "No info"
 
 
+# in time arrival and time departure times are stored in a form of a timestemps so this function converts timestemps
+# to a human-readable format
 def timstemp_to_human(stemp):
     raw_time = datetime.datetime.fromtimestamp(stemp)
     return raw_time.strftime("%H:%M")
