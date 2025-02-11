@@ -1,6 +1,6 @@
 from FlightRadar24 import FlightRadar24API
 from geopy.geocoders import Nominatim
-import noinfo_cather as cat
+import noinfo_catcher as cat
 
 
 class Picker:
@@ -71,4 +71,4 @@ class Picker:
 
 test = Picker()
 
-print(test.get_by_bounds(10, "Wrocław"))
+print(test.get_by_bounds(100, "Wrocław"))
