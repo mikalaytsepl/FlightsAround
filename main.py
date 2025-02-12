@@ -1,16 +1,17 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6 import uic
-import os
 
-class MainWindow(QMainWindow):
+from ui.test import Ui_MainWindow
+
+class FlightTracker(QMainWindow):
     def __init__(self):
-        super().__init__()
-        ui_path = os.path.join(os.path.dirname(__file__), "ui", "test.ui")
-        uic.loadUi(ui_path, self)  # Wczytanie UI
+        super(FlightTracker, self).__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = FlightTracker()
     window.show()
+
     sys.exit(app.exec())
