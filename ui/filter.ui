@@ -21,7 +21,7 @@ font: 10pt &quot;System-ui&quot;;</string>
    <item row="1" column="1" colspan="2">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="1" column="0">
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pushButton_setUp">
        <property name="enabled">
         <bool>true</bool>
        </property>

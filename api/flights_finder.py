@@ -1,9 +1,9 @@
 from FlightRadar24 import FlightRadar24API
 from geopy.geocoders import Nominatim
-import noinfo_catcher as cat
+from . import noinfo_catcher as cat
 
 
-class Picker:
+class Picker: # Probably should rename that 
 
     __fr24 = FlightRadar24API()  # initialization of API
     __geoflag = False
@@ -68,7 +68,4 @@ class Picker:
                      })
                 count += 1
         return self.flight_detailed
-
-test = Picker()
-
-print(test.get_by_bounds(100, "Wrocław"))
+    
