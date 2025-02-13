@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset theme="weather-overcast">
-    <normaloff>../../../../.designer/backup</normaloff>../../../../.designer/backup</iconset>
+    <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -262,6 +262,13 @@ color: gray;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="flightsTable">
+        <property name="styleSheet">
+         <string notr="true"/>
         </property>
        </widget>
       </item>

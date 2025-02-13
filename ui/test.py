@@ -160,6 +160,10 @@ class Ui_MainWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.verticalLayout_5.addWidget(self.label)
+        self.flightsTable = QtWidgets.QTableView(parent=self.centralwidget)
+        self.flightsTable.setStyleSheet("")
+        self.flightsTable.setObjectName("flightsTable")
+        self.verticalLayout_5.addWidget(self.flightsTable)
         self.gridLayout.addLayout(self.verticalLayout_5, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 

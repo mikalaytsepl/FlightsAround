@@ -1,7 +1,9 @@
 import sys
 import webbrowser
+
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDialog
 from PyQt6.QtCore import QThread
+from PyQt6.QtGui import QMovie
 
 from ui.test import Ui_MainWindow
 from ui.filter import Ui_Dialog
@@ -49,10 +51,13 @@ class FlightTracker(QMainWindow):
 
         self.filterDialog = FilterDialog()
 
+        #Ensure that the label is visible and the table is not
+        self.ui.label.setVisible(True)
+        self.ui.flightsTable.setVisible(False)
+
         # Store the thread instance as an attribute to prevent garbage collection
         self.browser_thread = None
-
-        self.new_thread = None
+        self.finder_thread = None
 
         # Button clicks calls 
         self.ui.pushButton_configureFilters.clicked.connect(self.openFilterDialog)
@@ -67,8 +72,12 @@ class FlightTracker(QMainWindow):
 
 
     def _searchForFlights(self):
-        self.new_thread = FlightSearcher(50,"Wrocław")
-        self.new_thread.start()
+        self.movie = QMovie("./src/__Iphone-spinner-1.gif")
+        self.ui.label.setMovie(self.movie)
+        self.movie.start()
+
+        self.finder_thread = FlightSearcher(100,"Wrocław")
+        self.finder_thread.start()
 
 
     def openFilterDialog(self):
