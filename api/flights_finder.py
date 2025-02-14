@@ -31,24 +31,32 @@ class Picker: # Probably should rename that
     # pseudo private method, which is made to find the position based on the location name
     def _get_my_pos(self, name):
         loc = Nominatim(user_agent="Get Loc")
-        location_name = loc.geocode(name)
-        self.__lat = float(location_name.latitude)
-        self.__long = float(location_name.longitude)
+        try:
+            location_name = loc.geocode(name)
+            self.__lat = float(location_name.latitude)
+            self.__long = float(location_name.longitude)
+        except AttributeError:
+            return None
 
     # method which actually scans the provided radius around the provided area
-    def get_by_bounds(self, rad, name) -> list:
+    def get_by_bounds(self, rad, name, metric) -> list:
         self.flight_detailed = []
         if not self.__geoflag:
             self._get_my_pos(name)
 
-        # translates the center of the improvised circle and the radius into the Flight Radar bounds set
-        bounds = self.__fr24.get_bounds_by_point(self.__lat, self.__long, float(rad * 1000))
-        flights = self.__fr24.get_flights(bounds=bounds) # gets flights info
+        try:
+
+            # translates the center of the improvised circle and the radius into the Flight Radar bounds set
+            bounds = self.__fr24.get_bounds_by_point(self.__lat, self.__long,
+                                                    float(rad * 1000) if metric == "km" else float(rad * 1609.34) if metric == "mi" else None)
+            flights = self.__fr24.get_flights(bounds=bounds) # gets flights info
+        except ValueError:
+            return None
 
         # since each flight contains alot of data, each flight gets parsed and the valuable information gets pulled from
         # it and aprsed flights are stored in the list of dicts
 
-        # p.s. each inforamtion retrivement is secured by noinfo catcer module
+        # p.s. each inforamtion retrivement is secured by noinfo catcher module
 
         if len(flights) != 0:
             count = 1
@@ -69,3 +77,7 @@ class Picker: # Probably should rename that
                 count += 1
         return self.flight_detailed
     
+'''
+test = Picker()
+print(test.get_by_bounds(100, "s00me$buttsh"))
+'''
