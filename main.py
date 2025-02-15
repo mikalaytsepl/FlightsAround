@@ -2,7 +2,7 @@ import sys
 import webbrowser
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QDialog, QHeaderView, QTableWidgetItem, QMessageBox
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QMovie
 
 from ui.test import Ui_MainWindow
@@ -73,6 +73,11 @@ class FlightTracker(QMainWindow):
         self.ui.pushButton_googleMaps.clicked.connect(lambda: self._goto("https://www.google.pl/maps"))
         self.ui.pushButton_search.clicked.connect(lambda: self._searchForFlights())
 
+        #using signals to check if the checkbox state has been changed
+        self.ui.checkBox_applyFilters.stateChanged.connect(self._filter_manager)
+
+        self.__found_flights = None # global variable to store results 
+
     
     def _goto(self, url: str) -> None:
         self.browser_thread = OpenBrowserThread(url)
@@ -101,6 +106,7 @@ class FlightTracker(QMainWindow):
     def _display_results(self, results):
         
         if results:
+            self.__found_flights = results
             self._populate_table(results)
         else:
             self.ui.label.setText("No flights found in the area")
@@ -142,9 +148,35 @@ class FlightTracker(QMainWindow):
         self.ui.label.setVisible(False)
         self.ui.flightsTable.setVisible(True)
 
+    def _filter_manager(self):
+        if self.ui.checkBox_applyFilters.isChecked() and self.__found_flights:
+            print("is in checked state and there are flights to work with")
+            if self.__found_flights:
+                test = []
+                parameters = ["callsign", "airline", "model", "departure", "departure_time", "arrival", "arrival_time"]
+                for parameter in parameters:
+                    line_edit = getattr(self.filterDialog, f"line_{parameter}", None)  # Dynamically get QLineEdit
+                    if line_edit:  # Ensure QLineEdit exists
+                        test.append(line_edit.text().strip())  # Get text from QLineEdit
+                    else:
+                        test.append("")  # Default value if QLineEdit not found
+                print(test)
+        elif self.ui.checkBox_applyFilters.isChecked() and not self.__found_flights:
+                print("checked state but there are no flights, error")
+                self.ui.checkBox_applyFilters.blockSignals(True)  # ❌ Temporarily stop signals
+                self.show_error_message("No flights were detected")
+                QTimer.singleShot(100, lambda: self.ui.checkBox_applyFilters.setChecked(False))# ✅ Uncheck the checkbox
+                self.ui.checkBox_applyFilters.blockSignals(False)
+        else:
+            if self.__found_flights:
+                print("unchecked, repopulating")
+                self._populate_table(self.__found_flights) # if apply filter is unchecked, then repopulate table NO NEW SEARCH IS CONDUCTED
+            else:
+                print("unchecked but no flights, stopping")
+                pass
+        
 
     # Simple error message with the specified text
-
     def show_error_message(self, message): 
         error_dialog = QMessageBox()
         error_dialog.setIcon(QMessageBox.Icon.Critical) 
