@@ -48,7 +48,7 @@ font: 10pt &quot;System-ui&quot;;</string>
      <item row="0" column="0">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QLineEdit" name="line_callsign">
+        <widget class="QLineEdit" name="line_0">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -61,7 +61,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_airline">
+        <widget class="QLineEdit" name="line_1">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -74,7 +74,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_model">
+        <widget class="QLineEdit" name="line_2">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -87,7 +87,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_departure">
+        <widget class="QLineEdit" name="line_3">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -100,7 +100,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_departure_time">
+        <widget class="QLineEdit" name="line_4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -116,7 +116,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_arrival">
+        <widget class="QLineEdit" name="line_5">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -129,7 +129,7 @@ font: 10pt &quot;System-ui&quot;;</string>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="line_arrival_time">
+        <widget class="QLineEdit" name="line_6">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>

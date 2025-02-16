@@ -1,7 +1,9 @@
 import sys
+import os
 import webbrowser
+import pandas as pd
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QDialog, QHeaderView, QTableWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QDialog, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog
 from PyQt6.QtCore import QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QMovie
 
@@ -72,6 +74,7 @@ class FlightTracker(QMainWindow):
         self.ui.pushButton_flightRadar.clicked.connect(lambda: self._goto("https://www.flightradar24.com"))
         self.ui.pushButton_googleMaps.clicked.connect(lambda: self._goto("https://www.google.pl/maps"))
         self.ui.pushButton_search.clicked.connect(lambda: self._searchForFlights())
+        self.ui.pushButton_save.clicked.connect(lambda: self._save_table())
 
         #using signals to check if the checkbox state has been changed
         self.ui.checkBox_applyFilters.stateChanged.connect(self._filter_manager)
@@ -94,21 +97,25 @@ class FlightTracker(QMainWindow):
             self.finder_thread.finished.connect(self._display_results) # send data from the connected signal to this funcion
             self.finder_thread.start()
 
-            self.movie = QMovie("./src/__Iphone-spinner-1.gif") # make it into more relative path (use os path or something idk)
+            # getting an absolute of the script and only then getting a path to a gif, allows to access it from everywhere
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+            gif_path = os.path.join(BASE_DIR, "src", "__Iphone-spinner-1.gif")
+
+            self.movie = QMovie(gif_path) # make it into more relative path (use os path or something idk)
             self.ui.label.setMovie(self.movie)
             self.movie.start()
 
         except ValueError:
             self.ui.label.setText("An error occured")
-            self.show_error_message("Invalid radius, please check input.")
+            self.show_message("Invalid radius, please check input.")
             
 
     def _display_results(self, results):
-        
         if results:
             self.__found_flights = results
             self._populate_table(results)
         else:
+            self.__found_flights = None # if there's no flights, ensure that old ones will not appear in filters
             self.ui.label.setText("No flights found in the area")
 
     def _populate_table(self,results):
@@ -152,19 +159,35 @@ class FlightTracker(QMainWindow):
         if self.ui.checkBox_applyFilters.isChecked() and self.__found_flights:
             print("is in checked state and there are flights to work with")
             if self.__found_flights:
-                test = []
-                parameters = ["callsign", "airline", "model", "departure", "departure_time", "arrival", "arrival_time"]
-                for parameter in parameters:
+                filter_params = {}
+
+                # static calling whould be faster, but this approach is more scallable 
+                for parameter in range(7):
                     line_edit = getattr(self.filterDialog, f"line_{parameter}", None)  # Dynamically get QLineEdit
-                    if line_edit:  # Ensure QLineEdit exists
-                        test.append(line_edit.text().strip())  # Get text from QLineEdit
-                    else:
-                        test.append("")  # Default value if QLineEdit not found
-                print(test)
+                    if line_edit and line_edit.text().strip() :  # Ensure QLineEdit exists and is not empty
+                        filter_params[parameter] = line_edit.text().strip() # Get text from QLineEdit
+
+
+            rows_to_remove=[]
+            for row in range(self.ui.flightsTable.rowCount()):  
+                row_data = []
+                for col in range(self.ui.flightsTable.columnCount()): 
+                    item = self.ui.flightsTable.item(row, col)  # Get QTableWidgetItem
+                    row_data.append(item.text() if item else "")  # Store text (or empty if None)
+                    
+                if not all(row_data[pos] == value for pos, value in filter_params.items()):
+                    rows_to_remove.append(row)
+                
+            # this trick allows to delete rows without shifting others because we are removing from the end 
+            for row in reversed(rows_to_remove):
+                self.ui.flightsTable.removeRow(row)
+                       
+
+
         elif self.ui.checkBox_applyFilters.isChecked() and not self.__found_flights:
                 print("checked state but there are no flights, error")
                 self.ui.checkBox_applyFilters.blockSignals(True)  # ❌ Temporarily stop signals
-                self.show_error_message("No flights were detected")
+                self.show_message("No flights were detected")
                 QTimer.singleShot(100, lambda: self.ui.checkBox_applyFilters.setChecked(False))# ✅ Uncheck the checkbox
                 self.ui.checkBox_applyFilters.blockSignals(False)
         else:
@@ -174,13 +197,50 @@ class FlightTracker(QMainWindow):
             else:
                 print("unchecked but no flights, stopping")
                 pass
-        
 
-    # Simple error message with the specified text
-    def show_error_message(self, message): 
+
+
+    def _save_table(self):
+        # standard "saving vindow"
+        file_name, _ = QFileDialog.getSaveFileName(
+        self,
+        "Save Table",
+        "",
+        "Excel Files (*.xlsx);;All Files (*)"
+        )
+
+        
+        if file_name:
+            if not file_name.endswith(".xlsx"):  # Ensure correct file extension
+                file_name += ".xlsx"
+
+            # extracting headers from the table 
+            headers = [self.ui.flightsTable.horizontalHeaderItem(col).text() for col in range(self.ui.flightsTable.columnCount())]
+
+            # Extract rows
+            table_data = []
+            for row in range(self.ui.flightsTable.rowCount()):
+                row_data = [
+                    self.ui.flightsTable.item(row, col).text() if self.ui.flightsTable.item(row, col) else ""
+                    for col in range(self.ui.flightsTable.columnCount())
+                ]
+                table_data.append(row_data)
+
+            # Convert to DataFrame
+            df = pd.DataFrame(table_data, columns=headers)
+
+            # save to Excel and show the popup with path afterwards
+            df.to_excel(file_name, index=False, engine='openpyxl')
+            self.show_message(f"✅ Table saved to {file_name}","Information")
+
+                
+
+
+    # Simple error message with the specified text and symbol (critical byt default)
+    def show_message(self, message, symbol="Critical"): 
         error_dialog = QMessageBox()
-        error_dialog.setIcon(QMessageBox.Icon.Critical) 
-        error_dialog.setWindowTitle("Error") 
+        error_dialog.setIcon(getattr(QMessageBox.Icon, symbol)) 
+        error_dialog.setWindowTitle(symbol) 
         error_dialog.setText(message)  # Set error message
         error_dialog.exec()  # Show the dialog
 
