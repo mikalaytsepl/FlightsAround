@@ -201,6 +201,12 @@ class FlightTracker(QMainWindow):
 
 
     def _save_table(self):
+        #showing a message if there's no flights in the table (search results do not matter)
+        # cause there might be incorrect filter for them 
+        if not self.ui.flightsTable.rowCount():
+            self.show_message("There is nothing to save yet")
+            return None 
+
         # standard "saving vindow"
         file_name, _ = QFileDialog.getSaveFileName(
         self,
@@ -231,7 +237,7 @@ class FlightTracker(QMainWindow):
 
             # save to Excel and show the popup with path afterwards
             df.to_excel(file_name, index=False, engine='openpyxl')
-            self.show_message(f"✅ Table saved to {file_name}","Information")
+            self.show_message(f"Table saved to {file_name}","Information")
 
                 
 
