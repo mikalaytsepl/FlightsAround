@@ -26,7 +26,7 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.pushButton_setUp.sizePolicy().hasHeightForWidth())
         self.pushButton_setUp.setSizePolicy(sizePolicy)
-        self.pushButton_setUp.setMaximumSize(QtCore.QSize(1000, 50))
+        self.pushButton_setUp.setMaximumSize(QtCore.QSize(1500, 50))
         self.pushButton_setUp.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.pushButton_setUp.setObjectName("pushButton_setUp")
         self.gridLayout_2.addWidget(self.pushButton_setUp, 1, 0, 1, 1)
